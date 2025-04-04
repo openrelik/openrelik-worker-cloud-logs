@@ -1,3 +1,5 @@
+"""Google Cloud audit log processor."""
+
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,8 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import subprocess
 
 from pathlib import Path
 
@@ -35,17 +35,23 @@ TASK_METADATA = {
         {
             "name": "request_field",
             "label": "protoPayload request fields",
-            "description": "Comma seperated request fields to include in the output. `all` includes all fields.",
+            "description": (
+                "Comma separated request fields to include in the output. `all` "
+                "includes all fields."
+            ),
             "type": "text",  # Types supported: text, textarea, checkbox
             "required": False,
         },
         {
             "name": "response_field",
             "label": "protoPayload response fields",
-            "description": "Comma separated response fields to include in the output. `all` includes all fields.",
+            "description": (
+                "Comma separated response fields to include in the output. `all` "
+                "includes all fields."
+            ),
             "type": "text",
             "required": False,
-            },
+        },
     ],
 }
 
@@ -85,7 +91,7 @@ def command(
             extension="jsonl",
             data_type="cloud-logs:gcp:jsonl",
         )
-        #command = base_command + [input_file.get("path")]
+        # command = base_command + [input_file.get("path")]
 
         report_file = create_output_file(
             output_path,
@@ -108,7 +114,7 @@ def command(
         output_files.append(report_file.to_dict())
 
     if not output_files:
-        raise RuntimeError("Error processing Google Cloud audit logs.")
+        raise RuntimeError("No supported input files.")
 
     return create_task_result(
         output_files=output_files,
