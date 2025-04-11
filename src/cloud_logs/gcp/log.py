@@ -197,6 +197,9 @@ class GoogleCloudLog:
 
             if "@" in key:
                 key = key.replace("@", "")
+
+            if "/" in key:
+                key = key.replace("/", "_")
             request_key = f"request_{key}"
 
             self.AddLogRecord(request_key, value)
@@ -214,6 +217,9 @@ class GoogleCloudLog:
 
             if "@" in key:
                 key = key.replace("@", "")
+
+            if "/" in key:
+                key = key.replace("/", "_")
             response_key = f"response_{key}"
 
             self.AddLogRecord(response_key, value)
@@ -307,6 +313,8 @@ class GoogleCloudLog:
     def ProcessJsonPayload(self, payload: Dict[str, Any]) -> None:
         """Process Google Cloud jsonPayload."""
         for key, value in payload.items():
+            if "/" in key:
+                key = key.replace("/", "_")
             self.AddLogRecord(key, value)
 
     def ProcessTextPayload(self, payload: Dict[str, Any]) -> None:
@@ -343,6 +351,8 @@ class GoogleCloudLog:
 
             labels = log_entry.get("labels", {})
             for attribute, value in labels.items():
+                if "/" in attribute:
+                    attribute = attribute.replace("/", "_")
                 self.AddLogRecord(attribute, value)
 
         # Google Cloug LogEntry is union of:
