@@ -16,6 +16,10 @@
 
 from typing import Any, Dict, List
 
+from openrelik_worker_common.reporting import MarkdownDocument
+from openrelik_worker_common.reporting import MarkdownDocumentSection
+from openrelik_worker_common.reporting import MarkdownTable
+
 
 class GoogleCloudLogStat:
     """Class for tracking Google Cloud audit log stats."""
@@ -71,52 +75,41 @@ class GoogleCloudLogStat:
 
         return md_table
 
-    def Report(self) -> str:
-        """Returns GoogleCloudLogStat report."""
-        report = []
-        report.append("# Google Cloud Audit Logs Stat")
-        report.append("")
+    def CreateReport(self) -> str:
+        """Create GoogleCloudLogStat report."""
+        mddoc = MarkdownDocument(title="Google Cloud Audit Log Stat")
 
-        report.append(f"Log source: {self.log_source}")
-        report.append(f"Skipped logs: {self.skipped_log_count}")
-        report.append("")
+        general_section = mddoc.add_section()
+        general_section.add_bullet(f"Log source: {self.log_source}")
+        general_section.add_bullet(f"Skipped logs: {self.skipped_log_count}")
+        general_section.add_paragraph("")
 
-        report.append("## Payload Stat")
-        report.append("")
-        report.append("Distribution of Google Cloud logs payload types.")
-        report.append("")
-        report.extend(
-            self._CreateMarkdownTable("Payload Type", "Count", self.payload_type_stat)
-        )
-        report.append("")
+        payload_section = mddoc.add_section()
+        payload_section.add_header("Payload Stat", 2)
+        payload_table = MarkdownTable(columns=["Payload Type", "Count"])
+        for attribute, value in self.payload_type_stat.items():
+            payload_table.add_row(row_data=[attribute, str(value)])
+        payload_section.add_table(payload_table)
 
-        report.append("## Service Stat")
-        report.append("")
-        report.append("Distribution of Google Cloud service in logs")
-        report.append("")
-        report.extend(
-            self._CreateMarkdownTable("Service Name", "Count", self.service_stat)
-        )
-        report.append("")
+        service_section = mddoc.add_section()
+        service_section.add_header("Service Stat", 2)
+        service_table = MarkdownTable(columns=["Service Name", "Count"])
+        for attribute, value in self.service_stat.items():
+            service_table.add_row(row_data=[attribute, str(value)])
+        service_section.add_table(service_table)
 
-        report.append("## Method Stat")
-        report.append("")
-        report.append("Distribution of Google APIs method in logs.")
-        report.append("")
-        report.extend(
-            self._CreateMarkdownTable("Method Name", "Count", self.method_stat)
-        )
-        report.append("")
+        method_section = mddoc.add_section()
+        method_section.add_header("Method Stat", 2)
+        method_table = MarkdownTable(columns=["Method Name", "Count"])
+        for attribute, value in self.method_stat.items():
+            method_table.add_row(row_data=[attribute, str(value)])
+        method_section.add_table(method_table)
 
-        report.append("## Principal Email")
-        report.append("")
-        report.append("Distribution of principal email that requested APIs.")
-        report.append("")
-        report.extend(
-            self._CreateMarkdownTable(
-                "Principal Email", "Count", self.principal_email_stat
-            )
-        )
-        report.append("")
+        principal_section = mddoc.add_section()
+        principal_section.add_header("Principal Email Stat", 2)
+        principal_table = MarkdownTable(columns=["Principal Email", "Count"])
+        for attribute, value in self.principal_email_stat.items():
+            principal_table.add_row(row_data=[attribute, str(value)])
+        principal_section.add_table(principal_table)
 
-        return "\n".join(report)
+        return mddoc.to_markdown()

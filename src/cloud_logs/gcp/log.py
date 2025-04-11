@@ -454,4 +454,4 @@ class GoogleCloudLog:
 
         if report_file:
             with open(report_file, "w", encoding="utf-8") as report_writer:
-                report_writer.write(log_stat.Report())
+                report_writer.write(log_stat.CreateReport())
