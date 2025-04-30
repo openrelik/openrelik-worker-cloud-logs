@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "openrelik-worker-TEMPLATEWORKERNAME"
+name = "openrelik-worker-cloud-logs"
 version = "0.1.0"
-description = "Description of the worker"
-authors = ["YOUR NAME <email@example.com>"]
+description = "OpenRelik worker to process Cloud provider logs."
+authors = ["roshan maskey <roshanmaskey@gmail.com>"]
 readme = "README.md"
 package-mode = false
 
@@ -10,6 +10,7 @@ package-mode = false
 python = "^3.10"
 celery = { extras = ["redis"], version = "^5.4.0" }
 openrelik-worker-common = "^0.10.0"
+orjson = "^3.10.16"
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
