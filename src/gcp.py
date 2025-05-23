@@ -59,11 +59,11 @@ TASK_METADATA = {
 @celery.task(bind=True, name=TASK_NAME, metadata=TASK_METADATA)
 def command(
     self,
-    pipe_result: str = None,
-    input_files: list = None,
-    output_path: str = None,
-    workflow_id: str = None,
-    task_config: dict = None,
+    pipe_result: str = "",
+    input_files: list | None = None,
+    output_path: str = "",
+    workflow_id: str = "",
+    task_config: dict = {},
 ) -> str:
     """Run cloud-logs on input files.
 
@@ -102,12 +102,12 @@ def command(
 
         # Run the command
         log_processor = GoogleCloudLog()
-        log_processor.ProcessLogFile(
+        log_processor.process_log_file(
             input_file.get("path"),
             output_file.path,
             report_file.path,
-            task_config.get("request_field"),
-            task_config.get("response_field"),
+            task_config.get("request_field", ""),
+            task_config.get("response_field", ""),
         )
 
         output_files.append(output_file.to_dict())

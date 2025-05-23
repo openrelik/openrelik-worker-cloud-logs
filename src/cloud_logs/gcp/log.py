@@ -54,21 +54,21 @@ class GoogleCloudLog:
             "name",
         ]
 
-    def ServiceName(self) -> str:
+    def service_name(self) -> str | None:
         """Returns service name"""
         return self._log_record.get("service_name")
 
-    def AddLogRecord(self, attribute: str, value: Any) -> None:
+    def add_log_record(self, attribute: str, value: Any) -> None:
         """Adds Gogole Cloud log record."""
         if not value:
             return
         self._log_record[attribute] = value
 
-    def AddLogPayloadType(self, payload_type: str) -> None:
+    def add_log_payload_type(self, payload_type: str) -> None:
         """Adds Google Cloud log payload type."""
-        self.AddLogRecord("payload_type", payload_type)
+        self.add_log_record("payload_type", payload_type)
 
-    def _GetServiceAccountDelegation(
+    def _get_service_account_delegation(
         self, authentication_info: Dict[str, Any]
     ) -> List[str]:
         """Returns service account delegation list."""
@@ -95,27 +95,27 @@ class GoogleCloudLog:
 
         return delegations
 
-    def _ParseAuthenticationInfo(self, payload: Dict[str, Any]) -> None:
+    def _parse_authentication_info(self, payload: Dict[str, Any]) -> None:
         """Parse protoPayload.authenticationInfo."""
         # https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#AuthenticationInfo
         authentication_info = payload.get("authenticationInfo")
         if not authentication_info:
             return None
 
-        self.AddLogRecord("principal_email", authentication_info.get("principalEmail"))
-        self.AddLogRecord(
+        self.add_log_record("principal_email", authentication_info.get("principalEmail"))
+        self.add_log_record(
             "principal_subject", authentication_info.get("principalSubject")
         )
-        self.AddLogRecord(
+        self.add_log_record(
             "service_account_key_name", authentication_info.get("serviceAccountKeyName")
         )
 
-        delegations = self._GetServiceAccountDelegation(authentication_info)
+        delegations = self._get_service_account_delegation(authentication_info)
         if delegations:
-            self.AddLogRecord("delegations", delegations)
-            self.AddLogRecord("delegation_chain", "->".join(delegations))
+            self.add_log_record("delegations", delegations)
+            self.add_log_record("delegation_chain", "->".join(delegations))
 
-    def _ParseAuthorizationInfo(self, payload: Dict[str, Any]) -> None:
+    def _parse_authorization_info(self, payload: Dict[str, Any]) -> None:
         """Parse protoPayload.authorizationInfo."""
         # protoPayload.authorizationInfo
         # https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#AuthorizationInfo
@@ -138,9 +138,9 @@ class GoogleCloudLog:
                 permission = f"{permission}:{permission_type}:{granted}"
             permissions.append(permission)
 
-        self.AddLogRecord("permissions", permissions)
+        self.add_log_record("permissions", permissions)
 
-    def _ParseRequestMetadata(self, payload: Dict[str, Any]) -> None:
+    def _parse_request_metadata(self, payload: Dict[str, Any]) -> None:
         """Parse protoPayload.requestMetadata."""
         # protoPayload.requestMetadata
         # https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#RequestMetadata
@@ -148,9 +148,9 @@ class GoogleCloudLog:
         if not request_metadata:
             return None
 
-        self.AddLogRecord("caller_ip", request_metadata.get("callerIp"))
-        self.AddLogRecord("user_agent", request_metadata.get("callerSuppliedUserAgent"))
-        self.AddLogRecord("caller_network", request_metadata.get("callerNetwork"))
+        self.add_log_record("caller_ip", request_metadata.get("callerIp"))
+        self.add_log_record("user_agent", request_metadata.get("callerSuppliedUserAgent"))
+        self.add_log_record("caller_network", request_metadata.get("callerNetwork"))
 
         user_agent = request_metadata.get("callerSuppliedUserAgent")
         if user_agent:
@@ -158,22 +158,22 @@ class GoogleCloudLog:
                 matches = self._USER_AGENT_COMMAND_RE.search(user_agent)
                 if matches:
                     command_string = matches.group(1).replace(",", " ")
-                    self.AddLogRecord("gcloud_command_partial", command_string)
+                    self.add_log_record("gcloud_command_partial", command_string)
 
             if "invocation-id" in user_agent:
                 matches = self._USER_AGENT_INVOCATION_ID_RE.search(user_agent)
                 if matches:
-                    self.AddLogRecord("gcloud_command_identity", matches.group(1))
+                    self.add_log_record("gcloud_command_identity", matches.group(1))
 
-    def _ParseStatus(self, payload: Dict[str, Any]) -> None:
+    def _parse_status(self, payload: Dict[str, Any]) -> None:
         """Parse protoPayload.status."""
         # https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#Status
         status = payload.get("status")
         if not status:
             return None
 
-        self.AddLogRecord("status_coode", status.get("code"))
-        self.AddLogRecord("status_message", status.get("message"))
+        self.add_log_record("status_coode", status.get("code"))
+        self.add_log_record("status_message", status.get("message"))
 
         status_reasons = []
 
@@ -182,9 +182,9 @@ class GoogleCloudLog:
             if reason:
                 status_reasons.append(reason)
         if status_reasons:
-            self.AddLogRecord("status_reasons", status_reasons)
+            self.add_log_record("status_reasons", status_reasons)
 
-    def _ParseRequest(self, payload: Dict[str, Any]) -> None:
+    def _parse_request(self, payload: Dict[str, Any]) -> None:
         """Parse protoPayload.request."""
         request = payload.get("request")
         if not request:
@@ -202,9 +202,9 @@ class GoogleCloudLog:
                 key = key.replace("/", "_")
             request_key = f"request_{key}"
 
-            self.AddLogRecord(request_key, value)
+            self.add_log_record(request_key, value)
 
-    def _ParseResponse(self, payload: Dict[str, Any]) -> None:
+    def _parse_response(self, payload: Dict[str, Any]) -> None:
         """Parse protoPayload.response."""
         response = payload.get("response")
         if not response:
@@ -222,9 +222,9 @@ class GoogleCloudLog:
                 key = key.replace("/", "_")
             response_key = f"response_{key}"
 
-            self.AddLogRecord(response_key, value)
+            self.add_log_record(response_key, value)
 
-    def _ParseServiceData(self, payload: Dict[str, Any]) -> None:
+    def _parse_service_data(self, payload: Dict[str, Any]) -> None:
         """Parse protoPayload.serviceData."""
         service_data = payload.get("serviceData")
         if not service_data:
@@ -241,15 +241,15 @@ class GoogleCloudLog:
                 role = binding_delta.get("role")
 
                 policy_delta_list.append(f"{member}:{role}:{action}")
-            self.AddLogRecord("policy_deltas", policy_delta_list)
+            self.add_log_record("policy_deltas", policy_delta_list)
 
         # Permission changes
         permission_delta = service_data.get("permissionDelta")
         if permission_delta:
             for key, value in permission_delta.items():
-                self.AddLogRecord(key, value)
+                self.add_log_record(key, value)
 
-    def _ParseComputeSourceImages(self, request: Dict[str, Any]) -> None:
+    def _parse_compute_source_images(self, request: Dict[str, Any]) -> None:
         """Parse source images."""
         source_images = []
 
@@ -260,9 +260,9 @@ class GoogleCloudLog:
             if source_image:
                 source_images.append(source_image)
         if source_images:
-            self.AddLogRecord("source_images", source_images)
+            self.add_log_record("source_images", source_images)
 
-    def _ParseDCSA(self, request: Dict[str, Any]) -> None:
+    def _parse_dcsa(self, request: Dict[str, Any]) -> None:
         """Parse request and extract DCSA."""
         dcsa_email = None
         dcsa_scopes = None
@@ -279,55 +279,55 @@ class GoogleCloudLog:
 
                 dcsa_scopes.extend(scopes)
 
-        self.AddLogRecord("dcsa_email", dcsa_email)
-        self.AddLogRecord("dcsa_scopes", dcsa_scopes)
+        self.add_log_record("dcsa_email", dcsa_email)
+        self.add_log_record("dcsa_scopes", dcsa_scopes)
 
-    def _ParseComputeAuditLog(self, payload: Dict[str, Any]) -> None:
+    def _parse_compute_audit_log(self, payload: Dict[str, Any]) -> None:
         """Parse compute.googleapis.com logs."""
-        request = payload.get("request")
+        request: Dict[str, Any] = payload.get("request", {})
 
         # GCE instance create/insert activity
-        self._ParseComputeSourceImages(request)
-        self._ParseDCSA(request)
+        self._parse_compute_source_images(request)
+        self._parse_dcsa(request)
 
-    def ProcessProtoPayload(self, payload: Dict[str, Any]) -> None:
+    def process_proto_payload(self, payload: Dict[str, Any]) -> None:
         """Process Google Cloud audit protoPayload."""
         # AuditLog or protoPayload attributes
         # https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog
         # https://github.com/googleapis/googleapis/blob/master/google/cloud/audit/audit_log.proto
-        self.AddLogRecord("service_name", payload.get("serviceName"))
-        self.AddLogRecord("method_name", payload.get("methodName"))
-        self.AddLogRecord("resource_name", payload.get("resourceName"))
+        self.add_log_record("service_name", payload.get("serviceName"))
+        self.add_log_record("method_name", payload.get("methodName"))
+        self.add_log_record("resource_name", payload.get("resourceName"))
 
-        self._ParseAuthenticationInfo(payload)
-        self._ParseAuthorizationInfo(payload)
-        self._ParseRequestMetadata(payload)
-        self._ParseRequest(payload)
-        self._ParseResponse(payload)
-        self._ParseServiceData(payload)
+        self._parse_authentication_info(payload)
+        self._parse_authorization_info(payload)
+        self._parse_request_metadata(payload)
+        self._parse_request(payload)
+        self._parse_response(payload)
+        self._parse_service_data(payload)
 
         # service specific parsing
-        if self.ServiceName() == "compute.googleapis.com":
-            self._ParseComputeAuditLog(payload)
+        if self.service_name() == "compute.googleapis.com":
+            self._parse_compute_audit_log(payload)
 
-    def ProcessJsonPayload(self, payload: Dict[str, Any]) -> None:
+    def process_json_payload(self, payload: Dict[str, Any]) -> None:
         """Process Google Cloud jsonPayload."""
         for key, value in payload.items():
             if "/" in key:
                 key = key.replace("/", "_")
-            self.AddLogRecord(key, value)
+            self.add_log_record(key, value)
 
-    def ProcessTextPayload(self, payload: Dict[str, Any]) -> None:
+    def process_text_payload(self, payload: Dict[str, Any]) -> None:
         """Process Google Cloud textPayload."""
-        self.AddLogRecord("text_payload", payload)
+        self.add_log_record("text_payload", payload)
 
-    def LogRecord(self) -> Dict[str, Any]:
+    def log_record(self) -> Dict[str, Any] | None:
         """Returns processed Google Cloud log entry."""
         if not self._log_record:
             return None
         return self._log_record
 
-    def ProcessLogEntry(self, log_line: str) -> Dict[str, Any]:
+    def process_log_entry(self, log_line: str) -> Dict[str, Any] | None:
         """Process Google Cloud audit log entry."""
         if not log_line:
             return None
@@ -339,21 +339,21 @@ class GoogleCloudLog:
             return None
 
         # Parse LogEntry common attributes.
-        self.AddLogRecord("datetime", log_entry.get("timestamp"))
-        self.AddLogRecord("timestamp_desc", "Event Recorded")
+        self.add_log_record("datetime", log_entry.get("timestamp"))
+        self.add_log_record("timestamp_desc", "Event Recorded")
 
-        self.AddLogRecord("severity", log_entry.get("severity"))
-        self.AddLogRecord("log_name", log_entry.get("logName"))
+        self.add_log_record("severity", log_entry.get("severity"))
+        self.add_log_record("log_name", log_entry.get("logName"))
 
         resource = log_entry.get("resource")
         if resource:
-            self.AddLogRecord("resource_type", log_entry.get("type"))
+            self.add_log_record("resource_type", log_entry.get("type"))
 
             labels = log_entry.get("labels", {})
             for attribute, value in labels.items():
                 if "/" in attribute:
                     attribute = attribute.replace("/", "_")
-                self.AddLogRecord(attribute, value)
+                self.add_log_record(attribute, value)
 
         # Google Cloug LogEntry is union of:
         # - protoPayload
@@ -364,29 +364,29 @@ class GoogleCloudLog:
         text_payload = log_entry.get("textPayload")
 
         if proto_payload:
-            self.AddLogPayloadType("protoPayload")
-            self.ProcessProtoPayload(proto_payload)
+            self.add_log_payload_type("protoPayload")
+            self.process_proto_payload(proto_payload)
 
         if json_payload:
-            self.AddLogPayloadType("jsonPayload")
-            self.ProcessJsonPayload(json_payload)
+            self.add_log_payload_type("jsonPayload")
+            self.process_json_payload(json_payload)
 
         if text_payload:
-            self.AddLogPayloadType("textPayload")
-            self.ProcessTextPayload(text_payload)
+            self.add_log_payload_type("textPayload")
+            self.process_text_payload(text_payload)
 
-        self._BuildMessageString()
+        self._build_message_string()
 
-        return self.LogRecord()
+        return self.log_record()
 
-    def _BuildMessageString(self) -> None:
+    def _build_message_string(self) -> None:
         """Builds Timesketch message string."""
         if self._log_record.get("message"):
             return
 
         payload_type = self._log_record.get("payload_type")
         if payload_type == "textPayload":
-            self.AddLogRecord("message", self._log_record.get("text_payload"))
+            self.add_log_record("message", self._log_record.get("text_payload"))
             return
 
         requestor = "An unknown actor"
@@ -413,15 +413,15 @@ class GoogleCloudLog:
 
         message_string = f"{requestor} performed {action} on {resource}"
 
-        self.AddLogRecord("message", message_string)
+        self.add_log_record("message", message_string)
 
-    def ProcessLogFile(
+    def process_log_file(
         self,
         input_file: str,
         output_file: str,
-        report_file: str = None,
-        request_field: str = None,
-        response_field: str = None,
+        report_file: str = "",
+        request_field: str = "",
+        response_field: str = "",
     ) -> None:
         """Process Google Cloud log JSON (JSON-L) file."""
         log_stat = GoogleCloudLogStat(input_file)
@@ -441,17 +441,17 @@ class GoogleCloudLog:
         with open(output_file, "w", encoding="utf-8") as output_writer:
             with open(input_file, "r", encoding="utf-8") as input_reader:
                 for log_line in input_reader:
-                    log_entry = self.ProcessLogEntry(log_line)
+                    log_entry = self.process_log_entry(log_line)
                     if not log_entry:
-                        log_stat.IncreaseSkipLogCounter()
+                        log_stat.increase_skip_log_counter()
                         continue
 
                     output_writer.write(orjson.dumps(log_entry).decode("utf-8"))
                     output_writer.write("\n")
 
                     if report_file:
-                        log_stat.UpdateCloudLogStat(log_entry)
+                        log_stat.update_cloud_log_stat(log_entry)
 
         if report_file:
             with open(report_file, "w", encoding="utf-8") as report_writer:
-                report_writer.write(log_stat.CreateReport())
+                report_writer.write(log_stat.create_report())

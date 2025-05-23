@@ -33,7 +33,7 @@ class GoogleCloudLogStat:
         self.method_stat: Dict[str, int] = {}
         self.principal_email_stat: Dict[str, int] = {}
 
-    def UpdateCloudLogStat(self, log_entry: Dict[str, Any]) -> None:
+    def update_cloud_log_stat(self, log_entry: Dict[str, Any]) -> None:
         """Updates GoogleCloudLogStat values using processed log entry."""
         if not log_entry:
             return
@@ -58,11 +58,11 @@ class GoogleCloudLogStat:
                 self.principal_email_stat.get(principal_email, 0) + 1
             )
 
-    def IncreaseSkipLogCounter(self) -> None:
+    def increase_skip_log_counter(self) -> None:
         """Increment skip log counter by 1."""
         self.skipped_log_count += 1
 
-    def _CreateMarkdownTable(
+    def _create_markdown_table(
         self, attribute_title: str, value_title: str, stat: Dict[str, int]
     ) -> List[str]:
         """Returns markdown table list."""
@@ -75,7 +75,7 @@ class GoogleCloudLogStat:
 
         return md_table
 
-    def CreateReport(self) -> str:
+    def create_report(self) -> str:
         """Create GoogleCloudLogStat report."""
         mddoc = MarkdownDocument(title="Google Cloud Audit Log Stat")
 
