@@ -91,7 +91,6 @@ def command(
             extension="jsonl",
             data_type="cloud-logs:gcp:jsonl",
         )
-        # command = base_command + [input_file.get("path")]
 
         report_file = create_output_file(
             output_path,
