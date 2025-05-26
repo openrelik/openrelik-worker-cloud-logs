@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/github/openrelik/openrelik-worker-cloud-logs/graph/badge.svg?token=8BrTEHbqfC)](https://codecov.io/github/openrelik/openrelik-worker-cloud-logs)
+
 # OpenRelik worker for Cloud Logs
 
 ## Description
