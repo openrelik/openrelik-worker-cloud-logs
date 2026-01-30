@@ -30,7 +30,6 @@ openrelik-worker-cloud-logs:
 Run the following command.
 
 ```
-pip install poetry
-poetry install --with test --no-root
-poetry run pytest --cov=. -v
+uv sync --group test
+uv run pytest -s --cov=.
 ```
